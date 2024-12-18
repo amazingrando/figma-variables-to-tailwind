@@ -7,7 +7,10 @@
       "./node_modules/@types",
       "./node_modules/@figma"
     ],
-    "moduleResolution": "nodenext",
-    "module": "NodeNext"
-  }
+    "outDir": "./dist",
+    "jsx": "react",
+    "allowJs": true,
+    "moduleResolution": "node"
+  },
+  "include": ["src/**/*.ts"]
 }
