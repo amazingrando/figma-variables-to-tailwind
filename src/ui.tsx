@@ -12,6 +12,7 @@ interface PluginMessage {
 function Plugin() {
   const [isLoading, setIsLoading] = useState(false)
   const [colors, setColors] = useState<string[] | null>(null)
+  const [showToast, setShowToast] = useState(false)
 
   const handleGetVariables = () => {
     setIsLoading(true)
@@ -58,6 +59,15 @@ function Plugin() {
     return () => window.removeEventListener('message', handleMessage);
   }, []);
 
+  useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => {
+        setShowToast(false)
+      }, 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [showToast])
+
   // Extract the template string to a separate constant for better maintainability
   const getTailwindTemplate = (colors: string[]) => `const colors = ${JSON.stringify(colors, null, 2)};
 
@@ -77,28 +87,32 @@ function Plugin() {
   return (
     <Container space='medium'>
       <VerticalSpace space='medium' />
-      <Text className='text-xl'>Export Variables for Tailwind</Text>
+      <Text className='text-xl text-balance'>Export Color Variables for Tailwind</Text>
       <VerticalSpace space='medium' />
       {isLoading ? (
         <LoadingIndicator />
       ) : (
         <div>
           <Button fullWidth onClick={handleGetVariables}>
-            Get Variables
+            {colors === null ? 'Gather color variables' : 'Refresh'}
           </Button>
           {colors && (
             <div>
               <VerticalSpace space='medium' />
               <Text>Colors:</Text>
+              <VerticalSpace space='small' />
               <div className="relative">
                 <button 
                   className="absolute right-2 top-2 p-1 hover:bg-gray-200 rounded transition-colors duration-200"
-                  onClick={() => parent.postMessage({ 
-                    pluginMessage: { 
-                      type: 'copy-to-clipboard', 
-                      text: getTailwindTemplate(colors)
-                    } 
-                  }, '*')}
+                  onClick={() => {
+                    parent.postMessage({ 
+                      pluginMessage: { 
+                        type: 'copy-to-clipboard', 
+                        text: getTailwindTemplate(colors)
+                      } 
+                    }, '*')
+                    setShowToast(true)
+                  }}
                   title="Copy to clipboard"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -115,6 +129,11 @@ function Plugin() {
         </div>
       )}
       <VerticalSpace space='medium' />
+      {showToast && (
+        <div className="fixed bottom-4 right-4 bg-black text-white px-4 py-2 rounded shadow-lg animate-fade-in-out">
+          Copied!
+        </div>
+      )}
     </Container>
   )
 }

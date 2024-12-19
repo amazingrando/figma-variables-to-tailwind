@@ -7,7 +7,6 @@ export default function () {
   })
 }
 
-
 import { kebabCase } from './utils/caseChange';
 import { colorConstructor } from './utils/colorConstructor';
 

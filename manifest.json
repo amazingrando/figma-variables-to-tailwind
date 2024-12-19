@@ -3,8 +3,8 @@
   "editorType": [
     "figma"
   ],
-  "id": "preact-tailwindcss",
-  "name": "Export Variables for Tailwind",
+  "id": "amazingrando-export-color-variables-for-tailwind",
+  "name": "Export Color Variables for Tailwind",
   "main": "build/main.js",
   "ui": "build/ui.js"
 }
