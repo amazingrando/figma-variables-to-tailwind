@@ -12,69 +12,102 @@ figma.showUI(__html__);
 import { kebabCase } from './utils/caseChange';
 import { colorConstructor } from './utils/colorConstructor';
 
-function formatVariableOutput(name: string, value: RGB | RGBA, mode?: string): string {
+interface Mode {
+  modeId: string;
+  name: string;
+}
+
+interface ColorVariable {
+  name: string;
+  value: RGB | RGBA;
+  mode?: string;
+}
+
+function formatVariableOutput({ name, value, mode }: ColorVariable): string {
   return mode 
     ? `${kebabCase(name)}-${kebabCase(mode)}: ${colorConstructor(value)}`
     : `${kebabCase(name)}: ${colorConstructor(value)}`;
 }
 
-figma.ui.onmessage =  async (msg: {type: string, count: number}) => {
+async function processColorVariable(variable: Variable, modes: Mode[], collectionId: string) {
+  const colors: string[] = [];
+  const valuesByMode = variable.valuesByMode;
+  const numberOfModes = Object.keys(valuesByMode).length;
+
+  for (const modeId in valuesByMode) {
+    const modeName = modes.find(mode => mode.modeId === modeId)?.name;
+    const value = valuesByMode[modeId];
+
+    if (isRGBColor(value)) {
+      colors.push(formatVariableOutput({ name: variable.name, value, mode: modeName }));
+      continue;
+    }
+
+    if (isVariableAlias(value)) {
+      const aliasColors = await processAliasVariable(value.id, variable.name, modes, numberOfModes, collectionId);
+      colors.push(...aliasColors);
+    }
+  }
+
+  return colors;
+}
+
+async function processAliasVariable(aliasId: string, originalName: string, modes: Mode[], numberOfModes: number, collectionId: string): Promise<string[]> {
+  const alias = await figma.variables.getVariableByIdAsync(aliasId);
+  if (!alias) return [];
   
+  const colors: string[] = [];
+  const aliasValuesByMode = alias.valuesByMode;
+
+  if (numberOfModes === 1) {
+    const firstValue = aliasValuesByMode[Object.keys(aliasValuesByMode)[0]];
+    if (isRGBColor(firstValue)) {
+      colors.push(formatVariableOutput({ name: originalName, value: firstValue }));
+    }
+  } else {
+    for (const modeId in aliasValuesByMode) {
+      const value = aliasValuesByMode[modeId];
+      const collection = await figma.variables.getVariableCollectionByIdAsync(collectionId);
+      const modeInfo = collection?.modes.find(mode => mode.modeId === modeId);
+      const modeName = modeInfo?.name;
+      
+      if (isRGBColor(value)) {
+        colors.push(formatVariableOutput({ name: originalName, value, mode: modeName }));
+      }
+    }
+  }
+
+  return colors;
+}
+
+function isRGBColor(value: unknown): value is RGB | RGBA {
+  return typeof value === 'object' && value !== null && 'r' in value;
+}
+
+function isVariableAlias(value: unknown): value is VariableAlias {
+  return typeof value === 'object' && 
+    value !== null && 
+    'type' in value && 
+    value.type === 'VARIABLE_ALIAS';
+}
+
+figma.ui.onmessage = async (msg: { type: string }) => {
   if (msg.type === 'variables') {
     const localCollections = await figma.variables.getLocalVariableCollectionsAsync();
-    const colors: string[] = [];
-    
+    const allColors: string[] = [];
+
     for (const collection of localCollections) {
-      console.log('====== COLLECTION ========================')
-      
-      console.log(`Collection:`, {
-        id: collection.id,
-        name: collection.name,
-        modes: collection.modes,
-        variableIds: collection.variableIds
-      });
-
-      const modes = collection.modes;
-      console.log(modes)
-      
-      const variableList = collection.variableIds;
-      console.log(variableList)
-
-      for (const variableId of variableList) {
+      for (const variableId of collection.variableIds) {
         const variable = await figma.variables.getVariableByIdAsync(variableId);
         
-        if (variable && variable.resolvedType === "COLOR") {
-          const valuesByMode = variable.valuesByMode;
-          
-          for (const modeId in valuesByMode) {
-            const modeName = modes.find(mode => mode.modeId === modeId)?.name ?? 'default';
-
-            if (typeof valuesByMode[modeId] === 'object' && 'r' in valuesByMode[modeId]) {
-              colors.push(formatVariableOutput(variable.name, valuesByMode[modeId], modeName));
-            } else if (typeof valuesByMode[modeId] === 'object' && 
-                'type' in valuesByMode[modeId] && 
-                valuesByMode[modeId].type === 'VARIABLE_ALIAS') {
-              const alias = await figma.variables.getVariableByIdAsync(valuesByMode[modeId].id);
-              if (alias) {
-                console.log('Alias details:', {
-                  id: alias.id,
-                  name: alias.name,
-                  resolvedType: alias.resolvedType,
-                  valuesByMode: alias.valuesByMode,
-                  variableCollectionId: alias.variableCollectionId,
-                  remote: alias.remote,
-                  description: alias.description,
-                  hiddenFromPublishing: alias.hiddenFromPublishing,
-                  scopes: alias.scopes
-                });
-              }
-            }
-          }
+        if (variable?.resolvedType === "COLOR") {
+          const colors = await processColorVariable(variable, collection.modes, collection.id);
+          allColors.push(...colors);
         }
       }
     }
 
-    console.log('Final colors:', colors);
+    console.log('Final colors:', allColors);
     figma.closePlugin();
   }
 };
