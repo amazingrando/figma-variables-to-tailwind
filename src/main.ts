@@ -1,13 +1,12 @@
-// This plugin will open a window to prompt the user to enter a number, and
-// it will then create that many rectangles on the screen.
+import { showUI } from '@create-figma-plugin/utilities'
 
-// This file holds the main code for plugins. Code in this file has access to
-// the *figma document* via the figma global object.
-// You can access browser APIs in the <script> tag inside "ui.html" which has a
-// full browser environment (See https://www.figma.com/plugin-docs/how-plugins-run).
+export default function () {
+  showUI({
+    height: 500,
+    width: 300
+  })
+}
 
-// This shows the HTML page in "ui.html".
-figma.showUI(__html__);
 
 import { kebabCase } from './utils/caseChange';
 import { colorConstructor } from './utils/colorConstructor';
@@ -91,10 +90,10 @@ function isVariableAlias(value: unknown): value is VariableAlias {
     value.type === 'VARIABLE_ALIAS';
 }
 
-figma.ui.onmessage = async (msg: { type: string }) => {
+figma.ui.onmessage = async (msg) => {
   if (msg.type === 'variables') {
     const localCollections = await figma.variables.getLocalVariableCollectionsAsync();
-    const allColors: string[] = [];
+    const allColors: Record<string, string> = {};
 
     for (const collection of localCollections) {
       for (const variableId of collection.variableIds) {
@@ -102,12 +101,20 @@ figma.ui.onmessage = async (msg: { type: string }) => {
         
         if (variable?.resolvedType === "COLOR") {
           const colors = await processColorVariable(variable, collection.modes, collection.id);
-          allColors.push(...colors);
+          colors.forEach(color => {
+            const [key, value] = color.split(': ');
+            allColors[key] = value;
+          });
         }
       }
     }
 
     console.log('Final colors:', allColors);
-    figma.closePlugin();
+    figma.ui.postMessage({ type: 'colors', colors: allColors })
+    figma.ui.postMessage({ type: 'complete' })
   }
-};
+
+  if (msg.type === 'copy-to-clipboard') {
+    figma.ui.postMessage({ type: 'copy', text: msg.text });
+  }
+}
