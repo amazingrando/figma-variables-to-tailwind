@@ -1,18 +1,10 @@
 {
-  "name": "Tailwind color export",
-  "id": "1449427167966167692",
   "api": "1.0.0",
-  "main": "dist/code.js",
-  "capabilities": [],
-  "enableProposedApi": false,
-  "documentAccess": "dynamic-page",
   "editorType": [
     "figma"
   ],
-  "ui": "ui.html",
-  "networkAccess": {
-    "allowedDomains": [
-      "none"
-    ]
-  }
+  "id": "preact-tailwindcss",
+  "name": "Export Variables for Tailwind",
+  "main": "build/main.js",
+  "ui": "build/ui.js"
 }
