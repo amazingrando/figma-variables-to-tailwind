@@ -6,21 +6,26 @@
   transform-style: preserve-3d;
   @apply transition-all duration-100;
 }
+
 .btn:hover {
   @apply bg-magenta translate-y-[2px];
 }
+
 .btn:hover::after {
   @apply top-[8px];
 }
+
 .btn:active {
   @apply bg-magenta translate-y-[10px];
 }
+
 .btn:active::after {
   @apply top-[0px];
 }
+
 .btn::after {
   content: '';
-  @apply border-blue-500/70 border-solid border;
+  @apply border-blue-500/70 border-solid border bg-white/10;
   @apply absolute top-[10px] left-[-1px] w-[calc(100%+2px)] h-full;
   @apply px-4 py-2 rounded-lg border border-white/70 border-solid tracking-wide;
   @apply transition-all duration-100;
