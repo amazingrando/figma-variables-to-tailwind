@@ -24,7 +24,7 @@
     "editorType": [
       "figma"
     ],
-    "id": "amazingrando-export-color-variables-for-tailwind",
+    "id": "1452047036348662509",
     "name": "Export Color Variables for Tailwind",
     "main": "src/main.ts",
     "ui": "src/ui.tsx",
@@ -37,6 +37,7 @@
       "devAllowedDomains": [
         "https://storage.googleapis.com"
       ]
-    }
+    },
+    "documentAccess": "dynamic-page"
   }
 }
