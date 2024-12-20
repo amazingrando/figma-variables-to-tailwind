@@ -3,6 +3,9 @@ export default {
   content: ['./src/**/*.{ts,tsx}'],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['DM Sans', 'sans-serif'],
+      },
       keyframes: {
         'fade-in-out': {
           '0%': { opacity: '0' },
