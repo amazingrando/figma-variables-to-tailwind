@@ -3,8 +3,19 @@ export default {
   content: ['./src/**/*.{ts,tsx}'],
   theme: {
     extend: {
+      backgroundSize: {
+        '50%': '50%',
+      },
+      colors: {
+        dark: '#1C1924',
+        magenta: '#F808B5',
+        pre: {
+          DEFAULT: '#E8F2E6',
+          dark: '#D0D9CE',
+        },
+      },
       fontFamily: {
-        sans: ['DM Sans', 'sans-serif'],
+        sans: ['League Gothic', 'sans-serif'],
       },
       keyframes: {
         'fade-in-out': {
