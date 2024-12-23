@@ -6,5 +6,11 @@
       ],
       "url": "https://yuanqing.github.io/create-figma-plugin/figma-plugin.json"
     }
-  ]
+  ],
+  "workbench.colorCustomizations": {
+    "titleBar.activeBackground": "#F808B5",
+    "titleBar.activeForeground": "#FFFFFF",
+    "titleBar.inactiveBackground": "#F808B5",
+    "titleBar.inactiveForeground": "#FFFFFF"
+  }
 }
