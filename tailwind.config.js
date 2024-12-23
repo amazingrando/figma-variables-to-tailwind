@@ -8,7 +8,10 @@ export default {
       },
       colors: {
         dark: '#1C1924',
-        magenta: '#F808B5',
+        magenta: {
+          DEFAULT: '#F808B5',
+          light: '#FAC8EC',
+        },
         pre: {
           DEFAULT: '#E8F2E6',
           dark: '#D0D9CE',
