@@ -1,6 +1,6 @@
 import { showUI } from '@create-figma-plugin/utilities'
 import { kebabCase } from './utils/caseChange';
-import { colorConstructor } from './utils/colorConstructor';
+import { colorConstructor, ColorSpace } from './utils/colorConstructor';
 
 // Types
 type MessageType = 'variables' | 'copy-to-clipboard' | 'colors' | 'complete' | 'error' | 'copy';
@@ -23,6 +23,7 @@ interface PluginMessage {
   text?: string;
   colors?: string[];
   message?: string;
+  colorSpace?: ColorSpace;
 }
 
 interface ColorOutput {
@@ -57,11 +58,11 @@ const sendUIMessage = (message: PluginMessage): void => {
   figma.ui.postMessage(message);
 }
 
-const formatVariableOutput = ({ name, value, mode, prefix }: ColorVariable): string => {
+const formatVariableOutput = ({ name, value, mode, prefix }: ColorVariable, colorSpace: ColorSpace): string => {
   const formattedName = prefix ? `${prefix}-${kebabCase(name)}` : kebabCase(name);
   return mode 
-    ? `${formattedName}-${kebabCase(mode)}: ${colorConstructor(value)}`
-    : `${formattedName}: ${colorConstructor(value)}`;
+    ? `${formattedName}-${kebabCase(mode)}: ${colorConstructor(value, colorSpace)}`
+    : `${formattedName}: ${colorConstructor(value, colorSpace)}`;
 }
 
 // Core processing functions
@@ -69,7 +70,8 @@ async function processColorVariable(
   variable: Variable, 
   modes: Mode[], 
   collectionId: string, 
-  prefix?: string
+  prefix?: string,
+  colorSpace: string = 'rgba'
 ): Promise<string[]> {
   try {
     const colors: string[] = [];
@@ -81,7 +83,7 @@ async function processColorVariable(
         const modeName = modes.find(mode => mode.modeId === modeId)?.name;
 
         if (isRGBColor(value)) {
-          colors.push(formatVariableOutput({ name: variable.name, value, mode: modeName, prefix }));
+          colors.push(formatVariableOutput({ name: variable.name, value, mode: modeName, prefix }, colorSpace as ColorSpace));
           return;
         }
 
@@ -92,7 +94,8 @@ async function processColorVariable(
             modes, 
             numberOfModes, 
             collectionId, 
-            prefix
+            prefix,
+            colorSpace
           );
           colors.push(...aliasColors);
         }
@@ -112,7 +115,8 @@ async function processAliasVariable(
   modes: Mode[], 
   numberOfModes: number, 
   collectionId: string, 
-  prefix?: string
+  prefix?: string,
+  colorSpace: string = 'rgba'
 ): Promise<string[]> {
   try {
     const alias = await figma.variables.getVariableByIdAsync(aliasId);
@@ -125,7 +129,7 @@ async function processAliasVariable(
     if (numberOfModes === 1) {
       const [firstValue] = Object.values(aliasValuesByMode);
       if (isRGBColor(firstValue)) {
-        colors.push(formatVariableOutput({ name: originalName, value: firstValue, prefix }));
+        colors.push(formatVariableOutput({ name: originalName, value: firstValue, prefix }, colorSpace as ColorSpace));
       }
       return colors;
     }
@@ -143,7 +147,7 @@ async function processAliasVariable(
             value, 
             mode: modeInfo?.name, 
             prefix 
-          }));
+          }, colorSpace as ColorSpace));
         }
       })
     );
@@ -155,7 +159,8 @@ async function processAliasVariable(
   }
 }
 
-async function handleVariablesRequest(prefix?: string): Promise<void> {
+async function handleVariablesRequest(prefix?: string, colorSpace: ColorSpace = 'rgba'): Promise<void> {
+  console.log('handleVariablesRequest called with:', { prefix, colorSpace });
   try {
     const localCollections = await figma.variables.getLocalVariableCollectionsAsync();
     const allColors: ColorOutput = {};
@@ -170,7 +175,8 @@ async function handleVariablesRequest(prefix?: string): Promise<void> {
               variable, 
               collection.modes, 
               collection.id, 
-              prefix
+              prefix,
+              colorSpace
             );
             
             colors.forEach(color => {
@@ -192,10 +198,11 @@ async function handleVariablesRequest(prefix?: string): Promise<void> {
 
 // Message handling
 figma.ui.onmessage = async (msg: PluginMessage) => {
+  console.log('Received message:', msg);
   try {
     switch (msg.type) {
       case 'variables':
-        await handleVariablesRequest(msg.prefix);
+        await handleVariablesRequest(msg.prefix, msg.colorSpace);
         break;
       case 'copy-to-clipboard':
         if (msg.text) {
