@@ -20,12 +20,13 @@ function Plugin() {
   const [showToast, setShowToast] = useState(false)
   const [hasCustomPrefix, setHasCustomPrefix] = useState(false)
   const [prefix, setPrefix] = useState('')
+  const [colorSpace, setColorSpace] = useState('rgba')
 
   useEffect(() => {
     if (colors !== null) {
       handleGetVariables()
     }
-  }, [hasCustomPrefix, prefix])
+  }, [hasCustomPrefix, prefix, colorSpace])
 
   const handleGetVariables = () => {
     setIsLoading(true)
@@ -33,7 +34,8 @@ function Plugin() {
     parent.postMessage({ 
       pluginMessage: { 
         type: 'variables',
-        prefix: hasCustomPrefix ? prefix : undefined 
+        prefix: hasCustomPrefix ? prefix : undefined,
+        colorSpace: colorSpace
       } 
     }, '*')
   }
@@ -157,13 +159,25 @@ function Plugin() {
           <div className="mb-4">
             <input
               type="text"
-              className="w-full px-2 py-1 bg-dark border border-white/70 border-solid rounded"
+              className="w-full px-2 py-1 text-xl font-sans uppercase bg-dark border border-white/70 border-solid rounded focus:outline-none focus:ring-2 focus:ring-magenta"
               placeholder="Enter prefix..."
               value={prefix}
               onChange={(e) => setPrefix((e.target as HTMLInputElement).value)}
             />
           </div>
         )}
+
+        <div className="mb-4 mt-4">
+          <select
+            className="w-full px-2 py-1 bg-dark border border-white/70 border-solid rounded font-sans uppercase text-xl focus:outline-none focus:ring-2 focus:ring-magenta"
+            value={colorSpace}
+            onChange={(e) => setColorSpace((e.target as HTMLSelectElement).value)}
+          >
+            <option value="rgba">RGBA</option>
+            <option value="hex">HEX</option>
+            <option value="hsl">HSLA</option>
+          </select>
+        </div>
 
         <VerticalSpace space='medium' />
 
