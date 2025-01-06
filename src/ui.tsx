@@ -176,6 +176,7 @@ function Plugin() {
             <option value="rgba">RGBA</option>
             <option value="hex">HEX</option>
             <option value="hsl">HSLA</option>
+            <option value="oklch">OKLCH</option>
           </select>
         </div>
 

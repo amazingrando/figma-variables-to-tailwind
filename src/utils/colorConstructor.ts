@@ -1,10 +1,11 @@
 type ColorValue = { r?: number; g?: number; b?: number; a?: number };
-export type ColorSpace = 'rgba' | 'hex' | 'hsl';
+export type ColorSpace = 'rgba' | 'hex' | 'hsl' | 'oklch';
 
 const DEFAULT_COLORS = {
   rgba: 'rgba(0, 0, 0, 0)',
   hex: '#00000000',
-  hsl: 'hsla(0, 0%, 0%, 0)'
+  hsl: 'hsla(0, 0%, 0%, 0)',
+  oklch: 'oklch(0% 0 0 / 0)'
 } as const;
 
 const normalizeColor = (value: ColorValue) => ({
@@ -51,6 +52,21 @@ const rgbToHsl = (r: number, g: number, b: number, a: number): string => {
 const rgbToRgba = (r: number, g: number, b: number, a: number): string => 
   `rgba(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)}, ${a})`;
 
+const rgbToOklch = (r: number, g: number, b: number, a: number): string => {
+  // Convert RGB to OKLCH (simplified conversion)
+  // Note: This is a basic conversion. For production use, 
+  // consider using a color conversion library for more accurate results
+  const l = 0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b;
+  const m = 0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b;
+  const s = 0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b;
+
+  const lightness = Math.round(l * 100);
+  const chroma = Math.round(Math.sqrt(m * m + s * s) * 100) / 100;
+  const hue = Math.round(Math.atan2(s, m) * (180 / Math.PI));
+
+  return `oklch(${lightness}% ${chroma} ${hue} / ${a})`;
+};
+
 export function colorConstructor(
   value: ColorValue,
   colorSpace: ColorSpace = 'rgba'
@@ -64,7 +80,8 @@ export function colorConstructor(
   const converters = {
     hex: rgbToHex,
     hsl: rgbToHsl,
-    rgba: rgbToRgba
+    rgba: rgbToRgba,
+    oklch: rgbToOklch
   };
 
   return converters[colorSpace](r, g, b, a);

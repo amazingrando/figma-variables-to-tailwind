@@ -622,12 +622,12 @@ video {
   margin-bottom: 1rem;
 }
 
-.mt-auto {
-  margin-top: auto;
-}
-
 .mt-4 {
   margin-top: 1rem;
+}
+
+.mt-auto {
+  margin-top: auto;
 }
 
 .block {
@@ -968,6 +968,10 @@ video {
   padding-bottom: 0.5rem;
 }
 
+.pr-4 {
+  padding-right: 1rem;
+}
+
 .pt-3 {
   padding-top: 0.75rem;
 }
@@ -978,10 +982,6 @@ video {
 
 .pt-6 {
   padding-top: 1.5rem;
-}
-
-.pr-4 {
-  padding-right: 1rem;
 }
 
 .text-right {
