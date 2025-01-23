@@ -80,7 +80,7 @@ async function processColorVariable(
 
     await Promise.all(
       Object.entries(valuesByMode).map(async ([modeId, value]) => {
-        const modeName = modes.find(mode => mode.modeId === modeId)?.name;
+        const modeName = numberOfModes > 1 ? modes.find(mode => mode.modeId === modeId)?.name : undefined;
 
         if (isRGBColor(value)) {
           colors.push(formatVariableOutput({ name: variable.name, value, mode: modeName, prefix }, colorSpace as ColorSpace));
@@ -125,7 +125,6 @@ async function processAliasVariable(
     const colors: string[] = [];
     const aliasValuesByMode = alias.valuesByMode;
 
-    // Handle single mode case
     if (numberOfModes === 1) {
       const [firstValue] = Object.values(aliasValuesByMode);
       if (isRGBColor(firstValue)) {
@@ -134,7 +133,6 @@ async function processAliasVariable(
       return colors;
     }
 
-    // Handle multiple modes
     const collection = await figma.variables.getVariableCollectionByIdAsync(collectionId);
     
     await Promise.all(
