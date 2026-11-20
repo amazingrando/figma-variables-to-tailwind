@@ -1,6 +1,42 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@source not "./output.css";
+
+@custom-variant dark (&:where(.figma-dark, .figma-dark *));
+
+@theme {
+  --color-dark: #1c1924;
+  --color-magenta: #f808b5;
+  --color-magenta-light: #fac8ec;
+  --color-pre: #e8f2e6;
+  --color-pre-dark: #d0d9ce;
+  --font-sans: "League Gothic", sans-serif;
+  --animate-fade-in-out: fade-in-out 3s ease-in-out;
+
+  @keyframes fade-in-out {
+    0% {
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    90% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+}
+
+@utility bg-50\% {
+  background-size: 50%;
+}
+
+select {
+  -webkit-appearance: none;
+  appearance: none;
+}
 
 .btn {
   transform-style: preserve-3d;
@@ -29,6 +65,6 @@
   @apply absolute top-[10px] left-[-1px] w-[calc(100%+2px)] h-full;
   @apply px-4 py-2 rounded-lg border border-white/70 border-solid tracking-wide;
   @apply transition-all duration-100;
-  
+
   transform: translateZ(-1px);
 }
