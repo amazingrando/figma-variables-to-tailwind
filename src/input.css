@@ -33,6 +33,11 @@
   background-size: 50%;
 }
 
+select {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
 .btn {
   transform-style: preserve-3d;
   @apply transition-all duration-100;
